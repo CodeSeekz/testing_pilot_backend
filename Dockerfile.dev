@@ -1,0 +1,9 @@
+# Dockerfile.dev
+FROM maven:3.9.6-eclipse-temurin-21
+WORKDIR /app
+
+# Install dependencies and use volumes for source code
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+CMD ["mvn", "spring-boot:run"]

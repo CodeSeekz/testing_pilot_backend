@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: springboot-app-dev
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database-1.cdiiseim8s9h.ap-southeast-1.rds.amazonaws.com:5432/testing_pilot
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Testingpilot123
+    volumes:
+      - ./src:/app/src
+      - ./pom.xml:/app/pom.xml
+      - ./target:/app/target
+    ports:
+      - 8080:8080
+    command: mvn spring-boot:run
