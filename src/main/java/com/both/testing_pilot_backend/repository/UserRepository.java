@@ -10,7 +10,7 @@ public interface UserRepository {
 
 	@Results(id = "appUserMapper", value = {
 					@Result(property = "userId", column = "user_id"),
-					@Result(property = "fullName", column = "full_name"),
+					@Result(property = "username", column = "username"),
 					@Result(property = "roles", column = "user_id", many = @Many(select = "getAllRolesByUserId"))
 	})
 	@Select("""

@@ -17,7 +17,7 @@ import java.util.List;
 public class User implements UserDetails {
 
 	private Long userId;
-	private String fullName;
+	private String username;
 	private String email;
 	private String password;
 	private List<String> roles;

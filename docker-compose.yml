@@ -1,17 +1,41 @@
+# compose.yaml - Backend ONLY (Spring Boot)
+
 services:
+  # Service name ('app') is default, but using container_name for clarity
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    # This name MUST match what the frontend's NEXT_PUBLIC_API_URL expects
     container_name: springboot-app-dev
+    build:
+      # Adjust context if this file isn't in the backend project root
+      context: . # Assumes this file is in the Spring Boot project root
+      dockerfile: Dockerfile.dev
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database-1.cdiiseim8s9h.ap-southeast-1.rds.amazonaws.com:5432/testing_pilot
       SPRING_DATASOURCE_USERNAME: postgres
+      # Consider using Docker secrets or environment files for passwords
       SPRING_DATASOURCE_PASSWORD: Testingpilot123
+      # Optional: Add profile if needed
+      # SPRING_PROFILES_ACTIVE: dev
     volumes:
+      # Mount source code for potential live reload (depends on mvn setup)
       - ./src:/app/src
       - ./pom.xml:/app/pom.xml
-      - ./target:/app/target
+      # Use a named volume for Maven dependencies cache
+      - maven_repo:/root/.m2
+      # You might not need to mount target if using dev mode that rebuilds in container
+      # - ./target:/app/target
     ports:
-      - 8080:8080
+      # Map host port 8080 to container port 8080
+      - "8080:8080"
     command: mvn spring-boot:run
+    networks: # Connect this service to the network
+      - testing-pilot-network # <-- Use the network you created
+
+# Define named volumes used by this service
+volumes:
+  maven_repo:
+
+# Define the external network
+networks:
+  testing-pilot-network:
+    external: true # <-- Mark it as externally created
