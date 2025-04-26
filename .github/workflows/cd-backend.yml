@@ -1,78 +1,91 @@
-# my-frontend-repo/.github/workflows/cd-frontend.yml
-name: CD Frontend Deployment # MODIFIED
+# my-backend-repo/.github/workflows/cd-backend.yml
+name: CD Backend Deployment
 
 on:
   push:
     branches:
-      - main
+      - main # Trigger workflow on push to the 'main' branch
 
 env:
-  REGISTRY: ghcr.io
-  # Define the FRONTEND image name. MUST match docker-compose.yml. Use lowercase.
-  IMAGE_NAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}/${{ secrets.FRONTEND_IMAGE_REPO_NAME || github.event.repository.name }} # MODIFIED (FRONTEND secret)
-  # Deployment path is the same for both
+  # --- Configuration Section ---
+  REGISTRY: ghcr.io # Using GitHub Container Registry
+  # Define the full image name. MUST match docker-compose.yml on server.
+  # Format: ghcr.io/owner_lowercase/repo_name_lowercase:tag
+  # Uses secrets for overrides, falls back to GitHub context variables.
+  # Ensure owner and repo names result in lowercase.
+  IMAGE_NAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}/${{ secrets.BACKEND_IMAGE_REPO_NAME || github.event.repository.name }}
+  # --- Deployment Target ---
+  # Path on the server where docker-compose.yml is located. ADJUST IF NEEDED.
   DEPLOY_PATH_ON_SERVER: /home/${{ secrets.SSH_USER }}/testing-pilot
 
 jobs:
   build-push-deploy:
-    name: Build, Push Docker Image and Deploy Frontend # MODIFIED
-    runs-on: ubuntu-latest
+    name: Build, Push Docker Image and Deploy Backend
+    runs-on: ubuntu-latest # Use a standard GitHub-hosted runner
+
     permissions:
-      contents: read
-      packages: write
+      contents: read      # Allow checkout code
+      packages: write     # Allow push to GHCR
 
     steps:
+      # 1. Get the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Set up Docker Buildx for better building capabilities
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 3. Log in to the Container Registry (GHCR)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }} # GitHub Actions actor username
+          password: ${{ secrets.GITHUB_TOKEN }} # Built-in token with packages:write permission
 
-      # MODIFIED Step Name and potentially context/file if Dockerfile isn't in root
-      - name: Build and Push Frontend Image
+      # 4. Build the Docker image and push it to GHCR
+      - name: Build and Push Backend Image
         id: build-push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
+          context: . # Root of the repository is the build context
+          file: ./Dockerfile # Path to the Dockerfile relative to context
+          push: true # Actually push the image
+          tags: | # Tag the image with 'latest' and the commit SHA
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha # Enable build cache from GitHub Actions cache
+          cache-to: type=gha,mode=max # Push build cache to GitHub Actions cache
 
-      # Deployment script remains identical, as it updates the whole stack
+      # 5. Deploy to the server using SSH
       - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.3 # Use a specific version for stability
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # port: 22
-          script: |
+          host: ${{ secrets.SSH_HOST }}          # Server IP or domain from secrets
+          username: ${{ secrets.SSH_USER }}      # Server username from secrets
+          key: ${{ secrets.SSH_PRIVATE_KEY }}    # SSH private key from secrets
+          # port: 22                            # Default SSH port is 22, uncomment to override
+          script: | # Commands to run on the server
             echo "Connecting to server..."
-            cd ${{ env.DEPLOY_PATH_ON_SERVER }}
+            cd ${{ env.DEPLOY_PATH_ON_SERVER }} # Navigate to the deployment directory
             echo "Current directory: $(pwd)"
 
-            # Optional: Login to registry on the server
+            # Optional: Login to registry on the server if images are private
+            # This requires a DEPLOY_PAT_OR_TOKEN secret containing a GitHub PAT with read:packages scope
             # echo "Logging into Docker registry on server..."
             # echo "${{ secrets.DEPLOY_PAT_OR_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
             echo "Pulling latest images for all services..."
-            docker compose pull backend frontend
+            docker compose pull backend frontend # Pull images defined in docker-compose.yml
 
             echo "Restarting services with latest images..."
+            # Bring services up, detach, force recreate containers, remove orphans
             docker compose up -d --force-recreate --remove-orphans backend frontend
 
             echo "Cleaning up old Docker images..."
+            # Remove dangling images (-f forces, -a removes all unused)
+            # '|| true' prevents workflow failure if prune does nothing
             docker image prune -af || true
 
-            echo "Frontend deployment script finished." # MODIFIED log message
+            echo "Backend deployment script finished."
