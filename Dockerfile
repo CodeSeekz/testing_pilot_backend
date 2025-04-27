@@ -2,7 +2,7 @@
 
 # Stage 1: Build the application
 # FROM eclipse-temurin:17-jdk-jammy as builder # Original
-FROM eclipse-temurin:17-jdk-jammy AS builder # Fixed casing warning (Optional)
+FROM eclipse-temurin:17-jdk-jammy AS builder
 WORKDIR /app
 
 # Copy build configuration first
