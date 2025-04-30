@@ -13,7 +13,7 @@ env:
   # Format: ghcr.io/owner_lowercase/repo_name_lowercase:tag
   # Uses secrets for overrides, falls back to GitHub context variables.
   # Ensure owner and repo names result in lowercase.
-  IMAGE_NAME: ${{ github.repository_owner }}/${{ github.event.repository.name }}
+  IMAGE_NAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}/${{ github.event.repository.name }}
   # --- Deployment Target ---
   # Path on the server where docker-compose.yml is located. ADJUST IF NEEDED.
   DEPLOY_PATH_ON_SERVER: /home/${{ secrets.SSH_USER }}/testing-pilot
