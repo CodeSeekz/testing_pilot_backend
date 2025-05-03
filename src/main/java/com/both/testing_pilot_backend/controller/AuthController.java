@@ -2,9 +2,14 @@ package com.both.testing_pilot_backend.controller;
 
 import com.both.testing_pilot_backend.jwt.JwtService;
 import com.both.testing_pilot_backend.model.request.AuthRequest;
+import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
 import com.both.testing_pilot_backend.model.response.AuthResponse;
+import com.both.testing_pilot_backend.service.AuthService;
 import com.both.testing_pilot_backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
 	private final UserService userService;
+	private final AuthService authService;
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
 
@@ -44,5 +50,9 @@ public class AuthController {
 		return ResponseEntity.ok(authResponse);
 	}
 
-
+	@PostMapping("/register")
+	public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
+		authService.register(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+	}
 }

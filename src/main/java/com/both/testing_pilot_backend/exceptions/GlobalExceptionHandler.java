@@ -125,4 +125,12 @@ public class GlobalExceptionHandler {
 						.body(problemDetail);
 	}
 
+	@ExceptionHandler(EmailAlreadyExistException.class)
+	public ProblemDetail handleEmailAlreadyExistException(EmailAlreadyExistException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
 }

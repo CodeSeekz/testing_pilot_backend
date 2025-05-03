@@ -1,6 +1,7 @@
 package com.both.testing_pilot_backend.model.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,25 +11,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class User implements UserDetails {
 
-	private Long userId;
+	private UUID userId;
 	private String username;
 	private String email;
 	private String password;
-	private List<String> roles;
+	private Boolean isVerified;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-		for (String role : roles) {
-			simpleGrantedAuthorities.add(new SimpleGrantedAuthority(role));
-		}
-		return simpleGrantedAuthorities;
+		return null;
 	}
 
 	@Override
@@ -58,6 +57,6 @@ public class User implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return isVerified;
 	}
 }
