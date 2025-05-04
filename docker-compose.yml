@@ -1,4 +1,4 @@
-# compose.yaml - Backend ONLY (Spring Boot)
+# compose.yaml - Backend ONLY (Spring Boot + PostgreSQL on Port 5433)
 
 services:
   # Service name ('app') is default, but using container_name for clarity
@@ -10,10 +10,17 @@ services:
       context: . # Assumes this file is in the Spring Boot project root
       dockerfile: Dockerfile.dev
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-1.cdiiseim8s9h.ap-southeast-1.rds.amazonaws.com:5432/testing_pilot
-      SPRING_DATASOURCE_USERNAME: postgres
-      # Consider using Docker secrets or environment files for passwords
-      SPRING_DATASOURCE_PASSWORD: Testingpilot123
+      # Email environment
+      FRONT_END_URL: http://localhost:3000
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_USERNAME: testingpilot6@gmail.com
+      SPRING_MAIL_PASSWORD: aybveadnbpjnwlmd # Consider secrets/.env file
+
+      # --- Database Environment (Connecting to postgres-db on internal port 5433) ---
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5434/testingpilotdb # <-- Port updated to 5433
+      SPRING_DATASOURCE_USERNAME: testingpilotuser
+      SPRING_DATASOURCE_PASSWORD: testingpilotpwd  # <-- Use secrets!
+
       # Optional: Add profile if needed
       # SPRING_PROFILES_ACTIVE: dev
     volumes:
@@ -22,18 +29,39 @@ services:
       - ./pom.xml:/app/pom.xml
       # Use a named volume for Maven dependencies cache
       - maven_repo:/root/.m2
-      # You might not need to mount target if using dev mode that rebuilds in container
-      # - ./target:/app/target
     ports:
       # Map host port 8080 to container port 8080
       - "8080:8080"
     command: mvn spring-boot:run
     networks: # Connect this service to the network
-      - testing-pilot-network # <-- Use the network you created
+      - testing-pilot-network
+    depends_on: # Ensure postgres-db starts before the app
+      - postgres-db
+
+  # === PostgreSQL Database (Configured for Port 5433 internally) ===
+  postgres-db:
+    image: postgres:15 # Use a specific version (e.g., 15) for stability, or 'latest'
+    container_name: testing-pilot-postgres
+    environment:
+      POSTGRES_USER: testingpilotuser # Define the username for the database
+      POSTGRES_PASSWORD: testingpilotpwd # Define the password. Use Docker secrets!
+      POSTGRES_DB: testingpilotdb   # Define the database name to be created
+    # Override the default command to specify the internal port
+    command: ["postgres", "-p", "5434"] # <-- Tells Postgres to listen on 5433
+    volumes:
+      # Mount named volume for data persistence
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Map host port 5433 to the container's internal port 5433
+      # (Optional: only needed if you want external access from host on 5433)
+      - "5434:5434" # <-- Host port : New Container port
+    networks: # Connect this service to the network
+      - testing-pilot-network
 
 # Define named volumes used by this service
 volumes:
   maven_repo:
+  postgres_data: # Define the volume for PostgreSQL persistence
 
 # Define the external network
 networks:

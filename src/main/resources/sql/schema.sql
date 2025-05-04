@@ -21,8 +21,9 @@ CREATE TABLE IF NOT EXISTS user_accounts (
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS email_verifications;
-CREATE TABLE IF NOT EXISTS email_verifications(
+DROP TABLE IF EXISTS verification_token;
+CREATE TABLE IF NOT EXISTS verification_token(
     email VARCHAR(255) PRIMARY KEY,
-    token TEXT
+    token TEXT,
+    expire_at TIMESTAMP
 )
