@@ -1,5 +1,6 @@
 package com.both.testing_pilot_backend.service.impl;
 
+import com.both.testing_pilot_backend.event.ForgetPasswordEvent;
 import com.both.testing_pilot_backend.event.UserRegistrationEvent;
 import com.both.testing_pilot_backend.service.EmailService;
 import jakarta.mail.MessagingException;
@@ -52,6 +53,25 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    public void sendForgetPasswordRequest(ForgetPasswordEvent payload) {
+        String sendTo = payload.getUser().getEmail();
+        String subject = "Forget Password Request";
+        String templateName = "forget-password-request";
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("logoUrl", "https://lh3.googleusercontent.com/a/ACg8ocI6Xb97ga-IEBsn-AcJrrhJmXlzXki5xBOyzLD38kMQTU3Uo1E=s288-c-no");
+        variables.put("companyName", "TestingPilot");
+        variables.put("name", payload.getUser().getUsername());
+        variables.put("expiration", "7 days");
+        variables.put("otpCode", payload.getOtpCode());
+        variables.put("supportEmail", supportEmail);
+        variables.put("year", 2025);
+        variables.put("companyAddress", "KHSRD Center");
+
+        sendTemplatedEmail(sendTo, subject, templateName, variables);
+    }
+
+    @Override
     public void sendTemplatedEmail(String sendTo, String subject, String templateName, Map<String, Object> variables) {
         Context context = new Context();
         context.setVariables(variables);
@@ -63,10 +83,7 @@ public class EmailServiceImpl implements EmailService {
     private void sendHtmlEmail(String sendTo, String subject, String htmlBody) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(
-                    mimeMessage,
-                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED
-            );
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED);
             helper.setFrom(sendFrom);
             helper.setTo(sendTo);
             helper.setSubject(subject);

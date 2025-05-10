@@ -12,21 +12,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-	@Override
-	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		return  userRepository.getUserByEmail(email);
-	}
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.getUserByEmail(email);
+    }
 
-	@Override
-	public void updateIsVerified(boolean isVerified) {
-		userRepository.updateIsVerified(isVerified);
-	}
+    @Override
+    public void updateIsVerified(UUID userId, boolean isVerified) {
+        userRepository.updateIsVerified(userId, isVerified);
+    }
+
+    @Override
+    public void updatePassword(UUID userId, String newPassword) {
+        userRepository.updatePassword(userId, newPassword);
+    }
+
 }

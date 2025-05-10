@@ -9,10 +9,7 @@ import java.util.UUID;
 @Mapper
 public interface UserRepository {
 
-    @Results(id = "appUserMapper", value = {
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "isVerified", column = "is_verify"),
-    })
+    @Results(id = "appUserMapper", value = {@Result(property = "userId", column = "user_id"), @Result(property = "isVerified", column = "is_verify"),})
     @Select("""
             SELECT * FROM users WHERE email = #{email}
             """)
@@ -20,22 +17,30 @@ public interface UserRepository {
 
     @ResultMap("appUserMapper")
     @Select("""
-        SELECT * FROM  users where user_id = #{userId}
-    """)
+                SELECT * FROM  users where user_id = #{userId}
+            """)
     User findById(UUID userId);
 
     @ResultMap("appUserMapper")
     @Select("""
-            INSERT INTO users (username, email, password
-        )
-        values (#{request.username}, #{request.email}, #{password})
-        RETURNING *;
-    """)
+                    INSERT INTO users (username, email, password
+                )
+                values (#{request.username}, #{request.email}, #{password})
+                RETURNING *;
+            """)
     User saveUser(@Param("request") RegisterRequestDTO request, String password);
 
     @Update("""
-        UPDATE users SET
-        is_verify = #{isVerified};
-    """)
-    void updateIsVerified(boolean isVerified);
+                UPDATE users SET
+                is_verify = #{isVerified}
+                WHERE user_id = #{userId};
+            """)
+    void updateIsVerified(UUID userId, boolean isVerified);
+
+    @Update("""
+                UPDATE users SET
+                password = #{newPassword}
+                WHERE user_id = #{userId}
+                """)
+    void updatePassword(UUID userId, String newPassword);
 }

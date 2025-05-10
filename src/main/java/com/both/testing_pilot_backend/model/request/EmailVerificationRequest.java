@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +16,7 @@ public class EmailVerificationRequest {
     private String email;
 
     @NotNull
-    @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", message = "Invalid UUID format")
-    private String token;
+    @Size(min = 6, max =6 , message = "otp must be 6 characters" )
+    @Size()
+    private String otp;
 }

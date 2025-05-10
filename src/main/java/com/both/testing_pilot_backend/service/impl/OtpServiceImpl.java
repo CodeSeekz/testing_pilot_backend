@@ -23,7 +23,7 @@ public class OtpServiceImpl implements OTPService {
     private String generatePlainOtp() {
         SecureRandom random = new SecureRandom();
         int otpInt = random.nextInt(900000) + 100000;
-        return  new DecimalFormat("000000").format(otpInt);
+        return new DecimalFormat("000000").format(otpInt);
     }
 
     private String generateOTP(String plainTextOtp) {
@@ -32,26 +32,26 @@ public class OtpServiceImpl implements OTPService {
 
     @Override
     public String generateAndPersistOtp(User user) {
-       String plainOtp = generatePlainOtp();
-       String hashedOtp = generateOTP(plainOtp);
+        String plainOtp = generatePlainOtp();
+        String hashedOtp = generateOTP(plainOtp);
 
-       OtpCode otpCode = new OtpCode(user, hashedOtp);
-       otpRepository.saveOtp(otpCode, user.getUserId
-               ());
+        OtpCode otpCode = new OtpCode(user, hashedOtp);
+        otpRepository.saveOtp(otpCode, user.getUserId());
 
-       return plainOtp;
+        return plainOtp;
     }
 
     @Override
     public boolean validateOTP(String otp, UUID userId) {
-        OtpCode otpCode = otpRepository.findByOtpAndUserId(otp, userId);
+        System.out.println(otp + " asdfasdfas " + userId);
+        OtpCode otpCode = otpRepository.findByUserId(userId);
 
-        if(otpCode == null) {
+        if (otpCode == null) {
             throw new NotFoundException("There is no record found");
         }
 
-        if(passwordEncoder.matches(otp, otpCode.getHashOtp()) && !otpCode.isExpired()) {
-            otpRepository.deleteByUserIdAndHashOtp(otpCode.getHashOtp(), userId);
+        if (passwordEncoder.matches(otp, otpCode.getHashOtp()) && !otpCode.isExpired()) {
+            otpRepository.deleteHashOtp(userId);
         } else {
             throw new BadRequestException("Invalid or expired OTP. Please request a new one.");
         }
@@ -62,5 +62,10 @@ public class OtpServiceImpl implements OTPService {
     @Override
     public OtpCode findByUserId(UUID userId) {
         return otpRepository.findByUserId(userId);
+    }
+
+    @Override
+    public void deleteOtp(UUID userId) {
+        otpRepository.deleteHashOtp(userId);
     }
 }

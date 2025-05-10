@@ -13,13 +13,12 @@ public class UserRegistrationEvent extends ApplicationEvent {
     private String email;
     private String name;
     private String otpCode;
-    private String url;
 
-    public UserRegistrationEvent(Object source, String email, String name, String otpCode, String url) {
+
+    public UserRegistrationEvent(Object source, String email, String name, String otpCode) {
         super(source);
         this.email = email;
         this.name = name;
         this.otpCode =  otpCode;
-        this.url = url;
     }
 }

@@ -16,9 +16,9 @@ public interface OtpRepository {
 
     @Delete("""
                 DELETE FROM otp_tokens
-                WHERE user_id = #{userId} AND hash_otp = #{hashOtp}
+                WHERE user_id = #{userId};
             """)
-    void deleteByUserIdAndHashOtp(String hashOtp, UUID userId);
+    void deleteHashOtp(UUID userId);
 
     @Results(id = "otpMapper", value = {@Result(property = "hashOtp", column = "hash_otp"), @Result(property = "expireDate", column = "expire_date", javaType = java.time.LocalDateTime.class), @Result(property = "user", column = "user_id", one = @One(select = "com.both.testing_pilot_backend.repository.UserRepository.findById"))})
     @Select("""
