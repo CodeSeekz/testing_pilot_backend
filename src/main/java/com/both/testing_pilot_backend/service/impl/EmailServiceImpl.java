@@ -4,9 +4,8 @@ import com.both.testing_pilot_backend.event.UserRegistrationEvent;
 import com.both.testing_pilot_backend.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.boot.autoconfigure.mail.MailProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,12 +19,16 @@ import java.util.Map;
 public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
-    private final MailProperties mailProperties;
 
-    public EmailServiceImpl(JavaMailSender emailSender, SpringTemplateEngine templateEngine, MailProperties mailProperties) {
+    @Value("${spring.mail.username}")
+    private String sendFrom;
+
+    @Value("${spring.mail.support_email}")
+    private String supportEmail;
+
+    public EmailServiceImpl(JavaMailSender emailSender, SpringTemplateEngine templateEngine) {
         this.mailSender = emailSender;
         this.templateEngine = templateEngine;
-        this.mailProperties = mailProperties;
     }
 
 
@@ -40,8 +43,8 @@ public class EmailServiceImpl implements EmailService {
         variables.put("companyName", "TestingPIlot");
         variables.put("name", payload.getName());
         variables.put("expiration", "7 days");
-        variables.put("verificationLink", payload.getUrl());
-        variables.put("supportEmail", "yumateb@gmail.com");
+        variables.put("otpCode", payload.getOtpCode());
+        variables.put("supportEmail", supportEmail);
         variables.put("year", 2025);
         variables.put("companyAddress", "KHSRD Center");
 
@@ -64,6 +67,7 @@ public class EmailServiceImpl implements EmailService {
                     mimeMessage,
                     MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED
             );
+            helper.setFrom(sendFrom);
             helper.setTo(sendTo);
             helper.setSubject(subject);
             helper.setText(htmlBody, true); // true = HTML content

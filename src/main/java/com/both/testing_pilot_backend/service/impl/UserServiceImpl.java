@@ -22,7 +22,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		User user = userRepository.getUserByEmail(email);
-		return user;
+		return  userRepository.getUserByEmail(email);
+	}
+
+	@Override
+	public void updateIsVerified(boolean isVerified) {
+		userRepository.updateIsVerified(isVerified);
 	}
 }

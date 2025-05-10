@@ -4,21 +4,38 @@ import com.both.testing_pilot_backend.model.entity.User;
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
 import org.apache.ibatis.annotations.*;
 
+import java.util.UUID;
+
 @Mapper
 public interface UserRepository {
 
     @Results(id = "appUserMapper", value = {
             @Result(property = "userId", column = "user_id"),
-            @Result(property = "isVerified", column = "is_verified"),
+            @Result(property = "isVerified", column = "is_verify"),
     })
     @Select("""
             SELECT * FROM users WHERE email = #{email}
             """)
     User getUserByEmail(String email);
 
-    @Insert("""
-        INSERT INTO users (username, email, password)
-        values (#{request.username}, #{request.email}, #{password})
+    @ResultMap("appUserMapper")
+    @Select("""
+        SELECT * FROM  users where user_id = #{userId}
     """)
-    void saveUser(@Param("request") RegisterRequestDTO request, String password);
+    User findById(UUID userId);
+
+    @ResultMap("appUserMapper")
+    @Select("""
+            INSERT INTO users (username, email, password
+        )
+        values (#{request.username}, #{request.email}, #{password})
+        RETURNING *;
+    """)
+    User saveUser(@Param("request") RegisterRequestDTO request, String password);
+
+    @Update("""
+        UPDATE users SET
+        is_verify = #{isVerified};
+    """)
+    void updateIsVerified(boolean isVerified);
 }

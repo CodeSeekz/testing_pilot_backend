@@ -1,5 +1,7 @@
 package com.both.testing_pilot_backend.config;
 
+import com.both.testing_pilot_backend.utils.OtpPurpose;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,10 @@ public class MyBatisConfig {
         sessionFactory.setDataSource(dataSource);
 
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
-        configuration.getTypeHandlerRegistry().register(UUID.class, UUIDTypeHandler.class);
+        TypeHandlerRegistry registry = configuration.getTypeHandlerRegistry();
+
+        registry.register(UUID.class, UUIDTypeHandler.class);
+        registry.register(OtpPurpose.class, EnumConfig.class);
         sessionFactory.setConfiguration(configuration);
 
         return sessionFactory.getObject();

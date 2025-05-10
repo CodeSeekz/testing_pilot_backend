@@ -1,51 +1,98 @@
 package com.both.testing_pilot_backend.service.impl;
 
 import com.both.testing_pilot_backend.event.UserRegistrationEvent;
+import com.both.testing_pilot_backend.exceptions.BadRequestException;
 import com.both.testing_pilot_backend.exceptions.EmailAlreadyExistException;
-import com.both.testing_pilot_backend.jwt.JwtService;
+import com.both.testing_pilot_backend.exceptions.NotFoundException;
+import com.both.testing_pilot_backend.model.entity.OtpCode;
 import com.both.testing_pilot_backend.model.entity.User;
-import com.both.testing_pilot_backend.model.entity.VerificationToken;
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
 import com.both.testing_pilot_backend.repository.UserRepository;
 import com.both.testing_pilot_backend.service.AuthService;
-import com.both.testing_pilot_backend.service.VerificationTokenService;
+import com.both.testing_pilot_backend.service.OTPService;
+import com.both.testing_pilot_backend.service.UserService;
+import com.both.testing_pilot_backend.utils.OtpPurpose;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
     private final ApplicationEventPublisher eventPublisher;
-    private final VerificationTokenService verificationTokenService;
+    private final UserService userService;
+    private final OTPService otpService;
 
     @Value("${app.dev.frontend.url}")
     private String frontendUrl;
-
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, ApplicationEventPublisher applicationEventPublisher, VerificationTokenService verificationTokenService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.eventPublisher = applicationEventPublisher;
-        this.verificationTokenService = verificationTokenService;
-    }
 
     @Override
     public void register(RegisterRequestDTO requestDTO) {
         User user = userRepository.getUserByEmail(requestDTO.getEmail());
 
         if (user == null) {
-            userRepository.saveUser(requestDTO, passwordEncoder.encode(requestDTO.getPassword()));
-            VerificationToken verificationToken = verificationTokenService.createToken(requestDTO.getEmail(), UUID.randomUUID().toString());
-            UserRegistrationEvent userRegistrationEvent = new UserRegistrationEvent(this, requestDTO.getEmail(), requestDTO.getUsername(), verificationToken.getToken(), frontendUrl);
-            eventPublisher.publishEvent(userRegistrationEvent);
+            User newUser = userRepository.saveUser(requestDTO, passwordEncoder.encode(requestDTO.getPassword()));
+
+
+            String plainOtp = otpService.generateAndPersistOtp(newUser);
+
+            UserRegistrationEvent userRegistrationEvent = new UserRegistrationEvent(this, requestDTO.getEmail(), requestDTO.getUsername(), plainOtp, frontendUrl);
+             eventPublisher.publishEvent(userRegistrationEvent);
         } else {
             throw new EmailAlreadyExistException("Email already exist!");
         }
+    }
+
+    @Override
+    public void resendEmailVerification(String email) {
+
+        User user = userRepository.getUserByEmail(email);
+        if(user == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        if(user != null &&  user.getIsVerified() == true) {
+          throw new BadRequestException("Email has already been verified");
+        }
+
+
+        OtpCode otpCode = otpService.findByUserId(user.getUserId());
+        if(otpCode != null) {
+            otpService.deleteOtp(user.getUserId());
+        }
+
+
+        String plainOtp = otpService.generateAndPersistOtp(user);
+
+        UserRegistrationEvent userRegistrationEvent = new UserRegistrationEvent(this, user.getEmail(), user.getUsername(), plainOtp, frontendUrl);
+        eventPublisher.publishEvent(userRegistrationEvent);
+    }
+
+    @Override
+    public void verifyEmail(String email, String token) {
+        User user = userRepository.getUserByEmail(email);
+        if(user == null) {
+            throw new NotFoundException("Verification failed: User account not found.");
+        }
+
+        if(user != null &&  user.getIsVerified() == true) {
+            throw new BadRequestException("This account has already been verified.");
+        }
+
+//        VerificationToken verificationToken = verificationTokenRepository.getByEmail(email);
+//        if(verificationToken == null) {
+//            throw new NotFoundException("There is no record found");
+//        }
+
+//        if(verificationToken != null && verificationToken.isExpired()) {
+//            throw new BadRequestException("Token is expired!");
+//        }
+
+        userService.updateIsVerified(true);
+//        verificationTokenRepository.removeByTokenAndEmail(verificationToken.getEmail(), verificationToken.getToken());
     }
 }

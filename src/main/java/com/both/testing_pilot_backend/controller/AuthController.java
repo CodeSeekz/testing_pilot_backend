@@ -2,13 +2,14 @@ package com.both.testing_pilot_backend.controller;
 
 import com.both.testing_pilot_backend.jwt.JwtService;
 import com.both.testing_pilot_backend.model.request.AuthRequest;
+import com.both.testing_pilot_backend.model.request.EmailVerificationRequest;
+import com.both.testing_pilot_backend.model.request.EmailVerificationResendRequest;
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
 import com.both.testing_pilot_backend.model.response.AuthResponse;
 import com.both.testing_pilot_backend.service.AuthService;
 import com.both.testing_pilot_backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,33 +27,69 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-	private final UserService userService;
-	private final AuthService authService;
-	private final AuthenticationManager authenticationManager;
-	private final JwtService jwtService;
+    private final UserService userService;
+    private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
-	private void authenticate(String email, String password) throws Exception {
-		try {
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-		} catch (DisabledException e) {
-			throw new Exception("USER_DISABLED", e);
-		} catch (BadCredentialsException e) {
-			throw new Exception("INVALID_CREDENTIALS", e);
-		}
-	}
+    private void authenticate(String email, String password) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (DisabledException e) {
+            throw new Exception("USER_DISABLED", e);
+        } catch (BadCredentialsException e) {
+            throw new Exception("INVALID_CREDENTIALS", e);
+        }
+    }
 
-	@PostMapping("/login")
-	public ResponseEntity<?> authenticate(@RequestBody AuthRequest request) throws Exception {
-		authenticate(request.getEmail(), request.getPassword());
-		final UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
-		final String token = jwtService.generateToken(userDetails);
-		AuthResponse authResponse = new AuthResponse(token);
-		return ResponseEntity.ok(authResponse);
-	}
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest request) throws Exception {
+        authenticate(request.getEmail(), request.getPassword());
+        final UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
+        final String token = jwtService.generateToken(userDetails);
+        AuthResponse authResponse = new AuthResponse(token);
+        return ResponseEntity.ok(authResponse);
+    }
 
-	@PostMapping("/register")
-	public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
-		authService.register(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body("User created");
-	}
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO request) {
+        authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    }
+
+    @PostMapping("/verification/resend")
+    public ResponseEntity<?> resendEmailVerification(@RequestBody EmailVerificationResendRequest request) {
+        authService.resendEmailVerification(request.getEmail());
+
+        return ResponseEntity.ok("New verification has been send to your email " + request.getEmail());
+    }
+
+    @PostMapping("/verification/verify")
+    public ResponseEntity<?> verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+        authService.verifyEmail(request.getEmail(), request.getToken());
+        return ResponseEntity.ok("Email has been successfully verified");
+    }
+
+
+    //	{
+//		"email": "user@example.com"
+//	}
+    @PostMapping("/password/request-reset-otp")
+    public ResponseEntity<?> sendForgetPassword() {
+        return null;
+    }
+
+
+    //
+//	{
+//		"email": "user@example.com",
+//			"otp": "654321",
+//			"newPassword": "NewSecurePassword123!",
+//			"passwordConfirmation": "NewSecurePassword123!" // Recommended
+//	}
+    @PostMapping("/password/reset-with-otp")
+    public ResponseEntity<?> verifyForgetPassword() {
+        return null;
+    }
+
 }

@@ -12,14 +12,14 @@ import java.time.Clock;
 public class UserRegistrationEvent extends ApplicationEvent {
     private String email;
     private String name;
-    private String verifyToken;
+    private String otpCode;
     private String url;
 
-    public UserRegistrationEvent(Object source, String email, String name, String resetToken, String url) {
+    public UserRegistrationEvent(Object source, String email, String name, String otpCode, String url) {
         super(source);
         this.email = email;
         this.name = name;
-        this.verifyToken = resetToken;
+        this.otpCode =  otpCode;
         this.url = url;
     }
 }

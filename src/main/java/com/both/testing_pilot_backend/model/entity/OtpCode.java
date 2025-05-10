@@ -1,18 +1,28 @@
 package com.both.testing_pilot_backend.model.entity;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-
-@Configuration
-@Data
-public class OtoProperties {
-    private Long id;
-    private String hashedOtp;
+@Getter
+@Setter
+@NoArgsConstructor
+public class OtpCode {
+    private UUID id;
+    private String hashOtp;
     private User user;
-    private LocalDateTime expiryDate;
-    private OtpPurpose
+    private LocalDateTime expireDate;
+
+    public OtpCode(User user, String hashedOtp) {
+        this.user = user;
+        this.hashOtp = hashedOtp;
+        this.expireDate = LocalDateTime.now().plusMinutes(10);
+    }
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(this.expireDate);
+    }
 }
