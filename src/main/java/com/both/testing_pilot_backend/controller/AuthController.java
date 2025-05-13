@@ -9,6 +9,7 @@ import com.both.testing_pilot_backend.service.UserService;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 @RestController
 @RequestMapping("/api/v1/auths")
@@ -74,10 +78,6 @@ public class AuthController {
         return ResponseEntity.ok("Email has been successfully verified");
     }
 
-
-    //	{
-    //		"email": "user@example.com"
-    //	}
     @PostMapping("/password/request-reset-otp")
     public ResponseEntity<?> sendForgetPassword(@Valid @RequestBody ForgetPasswordRequest request) {
         authService.requestForgetPassword(request.getEmail());
@@ -94,6 +94,12 @@ public class AuthController {
     public ResponseEntity<?> resendResetPassword(@Valid @RequestBody ForgetPasswordRequest request) {
         authService.requestForgetPassword(request.getEmail());
         return ResponseEntity.ok("If an account with that email exists, a reset link has been sent.");
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(String googleToken) throws GeneralSecurityException, IOException {
+        AuthResponse authResponse = authService.googleOauthCallback(googleToken);
+         return ResponseEntity.ok(authResponse);
     }
 
 }

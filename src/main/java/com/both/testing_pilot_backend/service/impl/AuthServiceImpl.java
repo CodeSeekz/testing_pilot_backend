@@ -1,23 +1,36 @@
 package com.both.testing_pilot_backend.service.impl;
 
+import com.both.testing_pilot_backend.config.GoogleConfig;
 import com.both.testing_pilot_backend.event.ForgetPasswordEvent;
 import com.both.testing_pilot_backend.event.UserRegistrationEvent;
 import com.both.testing_pilot_backend.exceptions.BadRequestException;
 import com.both.testing_pilot_backend.exceptions.EmailAlreadyExistException;
 import com.both.testing_pilot_backend.exceptions.NotFoundException;
+import com.both.testing_pilot_backend.jwt.JwtService;
 import com.both.testing_pilot_backend.model.entity.OtpCode;
 import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.entity.UserAccount;
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.model.response.AuthResponse;
+import com.both.testing_pilot_backend.repository.UserAccountRepository;
 import com.both.testing_pilot_backend.repository.UserRepository;
 import com.both.testing_pilot_backend.service.AuthService;
 import com.both.testing_pilot_backend.service.OTPService;
 import com.both.testing_pilot_backend.service.UserService;
-import com.both.testing_pilot_backend.utils.OtpPurpose;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +40,9 @@ public class AuthServiceImpl implements AuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserService userService;
     private final OTPService otpService;
+    private final GoogleConfig googleConfig;
+    private final UserAccountRepository userAccountRepository;
+    private final JwtService jwtService;
 
 
     @Override
@@ -34,7 +50,8 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.getUserByEmail(requestDTO.getEmail());
 
         if (user == null) {
-            User newUser = userRepository.saveUser(requestDTO, passwordEncoder.encode(requestDTO.getPassword()));
+            user = User.builder().username(requestDTO.getUsername()).email(requestDTO.getEmail()).isVerified(false).password(passwordEncoder.encode(requestDTO.getPassword())).build();
+            User newUser = userRepository.saveUser(user);
 
 
             String plainOtp = otpService.generateAndPersistOtp(newUser);
@@ -124,5 +141,55 @@ public class AuthServiceImpl implements AuthService {
 
         userService.updatePassword(user.getUserId(), passwordEncoder.encode(newPassword));
         otpService.deleteOtp(user.getUserId());
+    }
+
+    @Override
+    public AuthResponse googleOauthCallback(String googleToken) throws GeneralSecurityException, IOException {
+
+        // step 1: verify token
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleConfig.getClientId()))
+                .build();
+
+        GoogleIdToken idToken = verifier.verify(googleToken);
+        if (idToken == null) {
+            throw new BadRequestException("Invalid Google token.");
+        }
+
+        Payload payload = idToken.getPayload();
+
+        // Step 2: Extract user information
+        String email = payload.getEmail();
+        boolean isVerified = Boolean.valueOf(payload.getEmailVerified());
+        String userName = (String) payload.get("name");
+        String profileImage = (String) payload.get("picture");
+        String providerId = payload.getSubject();
+        String provider = "google";
+
+        // Step 3: Find or create User
+        User user = userRepository.getUserByEmail(email);
+        if (user == null) {
+            user = User.builder()
+                    .email(email)
+                    .username(userName)
+                    .profileImage(profileImage)
+                    .isVerified(isVerified)
+                    .password(null)
+                    .build();
+            user = userRepository.saveUser(user);
+        }
+
+        // Step 4: Find or create UserAccount
+        UserAccount userAccount = userAccountRepository.findByProviderNameAndProviderId(provider, provider);
+        if (userAccount == null) {
+            UserAccount newUserAccount = UserAccount.builder().provider(provider).providerId(providerId).build();
+            userAccountRepository.saveUserAccount(newUserAccount, user.getUserId());
+        }
+
+        // Step 5: Generate JWT token
+        UserDetails userDetails = userService.loadUserByUsername(email);
+        final String token = jwtService.generateToken(userDetails);
+
+        return new AuthResponse(token);
     }
 }

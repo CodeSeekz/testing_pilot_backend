@@ -1,6 +1,11 @@
 package com.both.testing_pilot_backend.service;
 
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.model.response.AuthResponse;
+import org.springframework.web.bind.annotation.RequestHeader;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public interface AuthService {
     void register(RegisterRequestDTO requestDTO);
@@ -12,4 +17,6 @@ public interface AuthService {
     void requestForgetPassword(String email);
 
     void resetPassword(String email, String plainOtp, String newPassword);
+
+    AuthResponse googleOauthCallback(String googleToken) throws GeneralSecurityException, IOException;
 }

@@ -21,6 +21,7 @@ services:
       SPRING_DATASOURCE_USERNAME: testingpilotuser
       SPRING_DATASOURCE_PASSWORD: testingpilotpwd  # <-- Use secrets!
       SPRING_MAIL_SUPPORT_EMAIL: yumateb@gmail.com
+      GOOGLE_CLIENT_ID: 140196654685-tnjva118amqpnth7q1spj9fjtt2ugfd7.apps.googleusercontent.com
 
       # Optional: Add profile if needed
       # SPRING_PROFILES_ACTIVE: dev

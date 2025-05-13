@@ -25,10 +25,10 @@ public interface UserRepository {
     @Select("""
                     INSERT INTO users (username, email, password
                 )
-                values (#{request.username}, #{request.email}, #{password})
+                values (#{request.username}, #{request.email}, #{request.password})
                 RETURNING *;
             """)
-    User saveUser(@Param("request") RegisterRequestDTO request, String password);
+    User saveUser(@Param("request") User request);
 
     @Update("""
                 UPDATE users SET
