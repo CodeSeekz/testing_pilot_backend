@@ -37,7 +37,8 @@ public class SecurityConfig {
             "/v3/api-docs/**",         // OpenAPI docs
             "/swagger-ui/**",          // Swagger UI
             "/swagger-ui.html",
-            "/actuator/**"
+            "/actuator/**",
+            "no-auth/**"
 
     };
 

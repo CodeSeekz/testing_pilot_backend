@@ -12,6 +12,8 @@ import com.both.testing_pilot_backend.model.entity.User;
 import com.both.testing_pilot_backend.model.entity.UserAccount;
 import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
 import com.both.testing_pilot_backend.model.response.AuthResponse;
+import com.both.testing_pilot_backend.model.response.GithubUserEmail;
+import com.both.testing_pilot_backend.model.response.GithubUserResponse;
 import com.both.testing_pilot_backend.repository.UserAccountRepository;
 import com.both.testing_pilot_backend.repository.UserRepository;
 import com.both.testing_pilot_backend.service.AuthService;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -43,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final GoogleConfig googleConfig;
     private final UserAccountRepository userAccountRepository;
     private final JwtService jwtService;
+    private final GithubService githubService;
 
 
     @Override
@@ -168,7 +172,11 @@ public class AuthServiceImpl implements AuthService {
 
         // Step 3: Find or create User
         User user = userRepository.getUserByEmail(email);
-        if (user == null) {
+        if (user != null) {
+            if (user.getPassword() != null) {
+                throw new BadRequestException("This email is already registered. Please sign in using your email and password.");
+            }
+        } else  {
             user = User.builder()
                     .email(email)
                     .username(userName)
@@ -180,13 +188,55 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Step 4: Find or create UserAccount
-        UserAccount userAccount = userAccountRepository.findByProviderNameAndProviderId(provider, provider);
+        UserAccount userAccount = userAccountRepository.findByProviderNameAndProviderId(provider, providerId);
         if (userAccount == null) {
             UserAccount newUserAccount = UserAccount.builder().provider(provider).providerId(providerId).build();
             userAccountRepository.saveUserAccount(newUserAccount, user.getUserId());
         }
 
         // Step 5: Generate JWT token
+        return generateAuthResponse(email);
+    }
+
+    @Override
+    public AuthResponse gitOauthLogin(String githubCode) {
+        GithubUserResponse githubUserResponseMono = githubService.getUserByAccessToken(githubCode).block();
+
+        // extract user information
+        String email = githubUserResponseMono.getEmail();
+        String userName = githubUserResponseMono.getName();
+        String provider = githubUserResponseMono.getProvider();
+        String providerId = githubUserResponseMono.getProviderId();
+        String profileImage = githubUserResponseMono.getProfileImage();
+        boolean isVerified = githubUserResponseMono.getIsVerified();
+
+        // find and create user
+        User user = userRepository.getUserByEmail(email);
+        if(user != null) {
+            if(user.getPassword() != null) {
+                throw new BadRequestException("This email is already registered. Please sign in using your email and password.");
+            }
+        }else {
+            user = User.builder()
+                    .email(email)
+                    .username(userName)
+                    .profileImage(profileImage)
+                    .isVerified(isVerified)
+                    .password(null)
+                    .build();
+            user = userRepository.saveUser(user);
+        }
+
+        // create user account
+        UserAccount userAccount = userAccountRepository.findByProviderNameAndProviderId(provider, providerId);
+        if (userAccount == null) {
+            UserAccount newUserAccount = UserAccount.builder().provider(provider).providerId(providerId).build();
+            userAccountRepository.saveUserAccount(newUserAccount, user.getUserId());
+        }
+        return  generateAuthResponse(email);
+    }
+
+    private AuthResponse generateAuthResponse(String email) {
         UserDetails userDetails = userService.loadUserByUsername(email);
         final String token = jwtService.generateToken(userDetails);
 
