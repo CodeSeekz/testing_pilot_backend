@@ -37,6 +37,40 @@ CREATE TABLE IF NOT EXISTS otp_tokens
     expire_date TIMESTAMP NOT NULL,
     user_id     UUID      NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS projects;
+CREATE TABLE IF NOT EXISTS projects
+(
+    project_id          UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    project_name        VARCHAR(255) NOT NULL,
+    project_description TEXT,
+    project_owner_id    UUID         NOT NULL,
+    created_at          TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at          TIMESTAMPTZ  NULL, -- For Soft Deletes,
+    CONSTRAINT fk_project_owner FOREIGN KEY (project_owner_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS prject_collaborators;
+CREATE TABLE IF NOT EXISTS project_collaborators (
+    project_collaborator_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE  ON UPDATE CASCADE,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS collections;
+CREATE TABLE IF NOT EXISTS collections
+(
+    collection_id   UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    collection_name VARCHAR(255) NOT NULL DEFAULT 'new collection',
+    project_id      UUID         NOT NULL,
+    created_at      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at      TIMESTAMPTZ  NULL,
+    CONSTRAINT fk_collections_projects FOREIGN KEY (project_id) REFERENCES projects (project_id) ON DELETE CASCADE ON UPDATE CASCADE
 )
 
 

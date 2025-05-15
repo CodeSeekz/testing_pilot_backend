@@ -20,7 +20,7 @@ import java.util.UUID;
 public class User implements UserDetails {
 
 	private UUID userId;
-	private String username;
+	private String name;
 	private String email;
 	private String password;
 	private Boolean isVerified = false;

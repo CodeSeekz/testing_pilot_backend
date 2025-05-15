@@ -10,7 +10,9 @@ import java.util.UUID;
 public interface UserRepository {
 
     @Results(id = "appUserMapper", value = {@Result(property = "userId", column = "user_id"),
-            @Result(property = "isVerified", column = "is_verify"),})
+            @Result(property = "name", column = "username"),
+            @Result(property = "isVerified", column = "is_verified"),
+            @Result(property = "profileImage", column = "profile_image")})
     @Select("""
             SELECT * FROM users WHERE email = #{email}
             """)
@@ -26,7 +28,7 @@ public interface UserRepository {
     @Select("""
                     INSERT INTO users (username, email, password, profile_image, is_verified
                 )
-                values (#{request.username}, #{request.email}, #{request.password}, #{request.profileImage}, #{request.isVerified})
+                values (#{request.name}, #{request.email}, #{request.password}, #{request.profileImage}, #{request.isVerified})
                 RETURNING *;
             """)
     User saveUser(@Param("request") User request);
