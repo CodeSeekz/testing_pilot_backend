@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/no-auth")
 public class NoAuth {
-
     @GetMapping
     public String hello() {
         return "werdftgyhujiklasdfasdfasdfasdf";

@@ -4,8 +4,11 @@ import com.both.testing_pilot_backend.jwt.JwtService;
 import com.both.testing_pilot_backend.model.entity.User;
 import com.both.testing_pilot_backend.model.request.*;
 import com.both.testing_pilot_backend.model.response.AuthResponse;
+import com.both.testing_pilot_backend.model.response.GithubUserEmail;
+import com.both.testing_pilot_backend.model.response.GithubUserResponse;
 import com.both.testing_pilot_backend.service.AuthService;
 import com.both.testing_pilot_backend.service.UserService;
+import com.both.testing_pilot_backend.service.impl.GithubService;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -30,6 +35,7 @@ public class AuthController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final GithubService githubService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
@@ -99,7 +105,11 @@ public class AuthController {
     @PostMapping("/google-login")
     public ResponseEntity<?> googleLogin(String googleToken) throws GeneralSecurityException, IOException {
         AuthResponse authResponse = authService.googleOauthCallback(googleToken);
-         return ResponseEntity.ok(authResponse);
+        return ResponseEntity.ok(authResponse);
     }
 
+    @PostMapping("github-login")
+    public ResponseEntity<AuthResponse> githubLogin(@RequestParam String githubCode) {
+        return ResponseEntity.ok(authService.gitOauthLogin(githubCode)) ;
+    }
 }

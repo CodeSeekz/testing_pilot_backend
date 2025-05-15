@@ -32,6 +32,21 @@ public class GlobalExceptionHandler {
 		return problemDetail;
 	}
 
+	@ExceptionHandler(GithubOauthException.class)
+	public ProblemDetail handleGithubOauthException(GithubOauthException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
+	@ExceptionHandler(GithubApiException.class)
+	public ProblemDetail handleGithubApiException(GithubApiException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
+
 	// Handle validation errors
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ProblemDetail handleValidationException(MethodArgumentNotValidException ex) {
@@ -132,5 +147,4 @@ public class GlobalExceptionHandler {
 		problemDetail.setProperty("timestamp", LocalDateTime.now());
 		return problemDetail;
 	}
-
 }
