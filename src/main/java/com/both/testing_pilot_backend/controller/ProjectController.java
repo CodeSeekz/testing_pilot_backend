@@ -4,14 +4,11 @@ import com.both.testing_pilot_backend.model.entity.Project;
 import com.both.testing_pilot_backend.model.request.CreateProjectRequest;
 import com.both.testing_pilot_backend.model.request.PageRequest;
 import com.both.testing_pilot_backend.model.response.ApiResponse;
-import com.both.testing_pilot_backend.model.response.CursorPaginationMeta;
 import com.both.testing_pilot_backend.model.response.CursorPaginationResponse;
 import com.both.testing_pilot_backend.service.ProjectService;
 import com.both.testing_pilot_backend.utils.CursorPaginationUtil;
-import com.both.testing_pilot_backend.utils.SpecParser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +28,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping
-    public ResponseEntity<CursorPaginationResponse<Project>> getAllProjects(@RequestParam MultiValueMap<String, String> params,
+    public ResponseEntity<ApiResponse<CursorPaginationResponse<Project>>> getAllProjects(@RequestParam MultiValueMap<String, String> params,
                                                                       @RequestParam int page,
                                                                       @RequestParam int size) {
         PageRequest pageRequest = new PageRequest(page, size, 0l);
@@ -40,7 +37,14 @@ public class ProjectController {
         CursorPaginationResponse<Project> cursorResponse = CursorPaginationUtil.build(projects, pageRequest.getSize(),
                 project -> project.getCreatedAt());
 
-        return ResponseEntity.ok(cursorResponse);
+        ApiResponse apiResponse = ApiResponse.builder()
+                .message("Projects has been fetched successfully")
+                .status(HttpStatus.OK)
+                .success(true)
+                .data(cursorResponse)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
     };
 
 

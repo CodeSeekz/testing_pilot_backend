@@ -66,7 +66,6 @@ public class SqlProvider {
             // Note: LIMIT and OFFSET aren't native SQL methods, handle manually
         }}.toString() + buildLimitOffsetClause(pageRequest);
 
-        System.out.println("dfghjkl; + \n" + sqlQuery);
         return  sqlQuery; // Manual append of LIMIT/OFFSET
     }
 
