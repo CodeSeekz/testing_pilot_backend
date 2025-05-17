@@ -6,14 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class PaginationMeta {
-    private int currentPage;
-    private int pageSize;
-    private long totalItems;
-    private int totalPages;
+public class CursorPaginationMeta {
+    private String nextCursor;
     private boolean hasNext;
-    private boolean hasPrevious;
+    private Integer limit;
 }

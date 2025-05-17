@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class PaginationResponse <T> {
-    private List<T> content;
-    private PaginationMeta metadata;
+public class CursorPaginationResponse <T> {
+    private List<T> payload;
+    private CursorPaginationMeta metadata;
 }
