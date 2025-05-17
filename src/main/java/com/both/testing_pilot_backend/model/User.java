@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.entity;
+package com.both.testing_pilot_backend.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,10 +20,10 @@ import java.util.UUID;
 public class User implements UserDetails {
 
 	private UUID userId;
-	private String username;
+	private String name;
 	private String email;
 	private String password;
-	private Boolean isVerified;
+	private Boolean isVerified = false;
 	private String profileImage;
 
 	@Override

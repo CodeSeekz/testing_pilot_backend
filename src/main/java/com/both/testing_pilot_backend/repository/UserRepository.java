@@ -1,7 +1,6 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.User;
-import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.model.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.UUID;
@@ -9,7 +8,10 @@ import java.util.UUID;
 @Mapper
 public interface UserRepository {
 
-    @Results(id = "appUserMapper", value = {@Result(property = "userId", column = "user_id"), @Result(property = "isVerified", column = "is_verify"),})
+    @Results(id = "appUserMapper", value = {@Result(property = "userId", column = "user_id"),
+            @Result(property = "name", column = "username"),
+            @Result(property = "isVerified", column = "is_verified"),
+            @Result(property = "profileImage", column = "profile_image")})
     @Select("""
             SELECT * FROM users WHERE email = #{email}
             """)
@@ -23,9 +25,9 @@ public interface UserRepository {
 
     @ResultMap("appUserMapper")
     @Select("""
-                    INSERT INTO users (username, email, password
+                    INSERT INTO users (username, email, password, profile_image, is_verified
                 )
-                values (#{request.username}, #{request.email}, #{request.password})
+                values (#{request.name}, #{request.email}, #{request.password}, #{request.profileImage}, #{request.isVerified})
                 RETURNING *;
             """)
     User saveUser(@Param("request") User request);
@@ -38,9 +40,9 @@ public interface UserRepository {
     void updateIsVerified(UUID userId, boolean isVerified);
 
     @Update("""
-                UPDATE users SET
-                password = #{newPassword}
-                WHERE user_id = #{userId}
-                """)
+            UPDATE users SET
+            password = #{newPassword}
+            WHERE user_id = #{userId}
+            """)
     void updatePassword(UUID userId, String newPassword);
 }

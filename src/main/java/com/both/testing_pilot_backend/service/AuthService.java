@@ -1,10 +1,7 @@
 package com.both.testing_pilot_backend.service;
 
-import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
-import com.both.testing_pilot_backend.model.response.AuthResponse;
-import com.both.testing_pilot_backend.model.response.GithubUserResponse;
-import org.springframework.web.bind.annotation.RequestHeader;
-import reactor.core.publisher.Mono;
+import com.both.testing_pilot_backend.dto.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.dto.response.AuthResponse;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

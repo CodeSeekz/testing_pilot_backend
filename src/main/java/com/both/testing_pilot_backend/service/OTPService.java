@@ -1,7 +1,7 @@
 package com.both.testing_pilot_backend.service;
 
-import com.both.testing_pilot_backend.model.entity.OtpCode;
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.OtpCode;
+import com.both.testing_pilot_backend.model.User;
 
 import java.util.UUID;
 

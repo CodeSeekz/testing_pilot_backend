@@ -1,6 +1,6 @@
 package com.both.testing_pilot_backend.jwt;
 
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.response;
+package com.both.testing_pilot_backend.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

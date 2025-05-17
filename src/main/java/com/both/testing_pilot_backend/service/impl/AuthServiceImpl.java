@@ -7,13 +7,12 @@ import com.both.testing_pilot_backend.exceptions.BadRequestException;
 import com.both.testing_pilot_backend.exceptions.EmailAlreadyExistException;
 import com.both.testing_pilot_backend.exceptions.NotFoundException;
 import com.both.testing_pilot_backend.jwt.JwtService;
-import com.both.testing_pilot_backend.model.entity.OtpCode;
-import com.both.testing_pilot_backend.model.entity.User;
-import com.both.testing_pilot_backend.model.entity.UserAccount;
-import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
-import com.both.testing_pilot_backend.model.response.AuthResponse;
-import com.both.testing_pilot_backend.model.response.GithubUserEmail;
-import com.both.testing_pilot_backend.model.response.GithubUserResponse;
+import com.both.testing_pilot_backend.model.OtpCode;
+import com.both.testing_pilot_backend.model.User;
+import com.both.testing_pilot_backend.model.UserAccount;
+import com.both.testing_pilot_backend.dto.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.dto.response.AuthResponse;
+import com.both.testing_pilot_backend.dto.response.GithubUserResponse;
 import com.both.testing_pilot_backend.repository.UserAccountRepository;
 import com.both.testing_pilot_backend.repository.UserRepository;
 import com.both.testing_pilot_backend.service.AuthService;
@@ -26,14 +25,16 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.getUserByEmail(requestDTO.getEmail());
 
         if (user == null) {
-            user = User.builder().username(requestDTO.getUsername()).email(requestDTO.getEmail()).isVerified(false).password(passwordEncoder.encode(requestDTO.getPassword())).build();
+            user = User.builder().name(requestDTO.getUsername()).email(requestDTO.getEmail()).isVerified(false).password(passwordEncoder.encode(requestDTO.getPassword())).build();
             User newUser = userRepository.saveUser(user);
 
 
@@ -164,7 +165,6 @@ public class AuthServiceImpl implements AuthService {
 
         // Step 2: Extract user information
         String email = payload.getEmail();
-        boolean isVerified = Boolean.valueOf(payload.getEmailVerified());
         String userName = (String) payload.get("name");
         String profileImage = (String) payload.get("picture");
         String providerId = payload.getSubject();
@@ -179,9 +179,9 @@ public class AuthServiceImpl implements AuthService {
         } else  {
             user = User.builder()
                     .email(email)
-                    .username(userName)
+                    .name(userName)
                     .profileImage(profileImage)
-                    .isVerified(isVerified)
+                    .isVerified(true)
                     .password(null)
                     .build();
             user = userRepository.saveUser(user);
@@ -208,7 +208,6 @@ public class AuthServiceImpl implements AuthService {
         String provider = githubUserResponseMono.getProvider();
         String providerId = githubUserResponseMono.getProviderId();
         String profileImage = githubUserResponseMono.getProfileImage();
-        boolean isVerified = githubUserResponseMono.getIsVerified();
 
         // find and create user
         User user = userRepository.getUserByEmail(email);
@@ -219,9 +218,9 @@ public class AuthServiceImpl implements AuthService {
         }else {
             user = User.builder()
                     .email(email)
-                    .username(userName)
+                    .name(userName)
                     .profileImage(profileImage)
-                    .isVerified(isVerified)
+                    .isVerified(true)
                     .password(null)
                     .build();
             user = userRepository.saveUser(user);
@@ -241,5 +240,15 @@ public class AuthServiceImpl implements AuthService {
         final String token = jwtService.generateToken(userDetails);
 
         return new AuthResponse(token);
+    }
+
+    public UUID getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            throw new BadRequestException("Authentication is required");
+        }
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+
+        return userService.getUserByEmail(userDetails.getUsername()).getUserId();
     }
 }

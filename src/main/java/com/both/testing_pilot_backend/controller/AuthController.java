@@ -1,29 +1,22 @@
 package com.both.testing_pilot_backend.controller;
 
+import com.both.testing_pilot_backend.dto.request.*;
 import com.both.testing_pilot_backend.jwt.JwtService;
-import com.both.testing_pilot_backend.model.entity.User;
-import com.both.testing_pilot_backend.model.request.*;
-import com.both.testing_pilot_backend.model.response.AuthResponse;
-import com.both.testing_pilot_backend.model.response.GithubUserEmail;
-import com.both.testing_pilot_backend.model.response.GithubUserResponse;
+import com.both.testing_pilot_backend.model.User;
+import com.both.testing_pilot_backend.dto.response.AuthResponse;
 import com.both.testing_pilot_backend.service.AuthService;
 import com.both.testing_pilot_backend.service.UserService;
 import com.both.testing_pilot_backend.service.impl.GithubService;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

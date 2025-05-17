@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.request;
+package com.both.testing_pilot_backend.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

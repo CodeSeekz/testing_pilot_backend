@@ -2,8 +2,8 @@ package com.both.testing_pilot_backend.service.impl;
 
 import com.both.testing_pilot_backend.exceptions.BadRequestException;
 import com.both.testing_pilot_backend.exceptions.NotFoundException;
-import com.both.testing_pilot_backend.model.entity.OtpCode;
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.OtpCode;
+import com.both.testing_pilot_backend.model.User;
 import com.both.testing_pilot_backend.repository.OtpRepository;
 import com.both.testing_pilot_backend.service.OTPService;
 import lombok.RequiredArgsConstructor;

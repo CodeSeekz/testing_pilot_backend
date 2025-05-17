@@ -1,7 +1,6 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.OtpCode;
-import com.both.testing_pilot_backend.utils.OtpPurpose;
+import com.both.testing_pilot_backend.model.OtpCode;
 import org.apache.ibatis.annotations.*;
 
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.request;
+package com.both.testing_pilot_backend.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
