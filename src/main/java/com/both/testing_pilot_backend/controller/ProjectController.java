@@ -9,6 +9,8 @@ import com.both.testing_pilot_backend.service.ProjectService;
 import com.both.testing_pilot_backend.utils.CursorPaginationUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +31,8 @@ public class ProjectController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<CursorPaginationResponse<Project>>> getAllProjects(@RequestParam MultiValueMap<String, String> params,
-                                                                                         @RequestParam int page,
-                                                                                         @RequestParam int size) {
+                                                                                         @RequestParam(required = false) @Min(0) int page,
+                                                                                         @RequestParam @Min(1) int size) {
 
         PageRequest pageRequest = new PageRequest(page, size, 0l);
         List<Project> projects = projectService.getAllProjects(params, pageRequest);
