@@ -1,17 +1,25 @@
 package com.both.testing_pilot_backend.controller;
 
+import com.both.testing_pilot_backend.model.entity.Project;
 import com.both.testing_pilot_backend.model.request.CreateProjectRequest;
+import com.both.testing_pilot_backend.model.request.PageRequest;
 import com.both.testing_pilot_backend.model.response.ApiResponse;
+import com.both.testing_pilot_backend.model.response.CursorPaginationMeta;
+import com.both.testing_pilot_backend.model.response.CursorPaginationResponse;
 import com.both.testing_pilot_backend.service.ProjectService;
+import com.both.testing_pilot_backend.utils.CursorPaginationUtil;
+import com.both.testing_pilot_backend.utils.SpecParser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +29,20 @@ import java.util.UUID;
 public class ProjectController {
 
     private final ProjectService projectService;
+
+    @GetMapping
+    public ResponseEntity<CursorPaginationResponse<Project>> getAllProjects(@RequestParam MultiValueMap<String, String> params,
+                                                                      @RequestParam int page,
+                                                                      @RequestParam int size) {
+        PageRequest pageRequest = new PageRequest(page, size, 0l);
+        List<Project> projects =  projectService.getAllProjects(params, pageRequest);
+
+        CursorPaginationResponse<Project> cursorResponse = CursorPaginationUtil.build(projects, pageRequest.getSize(),
+                project -> project.getCreatedAt());
+
+        return ResponseEntity.ok(cursorResponse);
+    };
+
 
     @PostMapping
     public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
@@ -38,7 +60,6 @@ public class ProjectController {
                 .status(HttpStatus.NO_CONTENT)
                 .success(true)
                 .build();
-
         return ResponseEntity.ok(apiResponse);
     }
 }

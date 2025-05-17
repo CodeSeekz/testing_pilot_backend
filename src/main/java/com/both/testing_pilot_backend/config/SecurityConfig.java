@@ -40,7 +40,7 @@ public class SecurityConfig {
             "/swagger-ui/**",          // Swagger UI
             "/swagger-ui.html",
             "/actuator/**",
-            "no-auth/**"
+            "/no-auth/**"
 
     };
 

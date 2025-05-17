@@ -42,9 +42,9 @@ CREATE TABLE IF NOT EXISTS otp_tokens
 DROP TABLE IF EXISTS projects;
 CREATE TABLE IF NOT EXISTS projects
 (
-    project_id          UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
-    project_name        VARCHAR(255) NOT NULL,
-    project_description TEXT,
+    id          UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    name        VARCHAR(255) NOT NULL,
+    description TEXT,
     project_owner_id    UUID         NOT NULL,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
