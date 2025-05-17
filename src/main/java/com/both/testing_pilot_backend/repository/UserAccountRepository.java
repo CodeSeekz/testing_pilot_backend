@@ -1,6 +1,6 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.UserAccount;
+import com.both.testing_pilot_backend.model.UserAccount;
 import org.apache.ibatis.annotations.*;
 
 import java.util.UUID;

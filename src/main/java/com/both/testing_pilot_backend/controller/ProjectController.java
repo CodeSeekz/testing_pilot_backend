@@ -1,10 +1,10 @@
 package com.both.testing_pilot_backend.controller;
 
-import com.both.testing_pilot_backend.model.entity.Project;
-import com.both.testing_pilot_backend.model.request.CreateProjectRequest;
-import com.both.testing_pilot_backend.model.request.PageRequest;
-import com.both.testing_pilot_backend.model.response.ApiResponse;
-import com.both.testing_pilot_backend.model.response.CursorPaginationResponse;
+import com.both.testing_pilot_backend.dto.request.ProjectRequest;
+import com.both.testing_pilot_backend.model.Project;
+import com.both.testing_pilot_backend.dto.request.PageRequest;
+import com.both.testing_pilot_backend.dto.response.ApiResponse;
+import com.both.testing_pilot_backend.dto.response.CursorPaginationResponse;
 import com.both.testing_pilot_backend.service.ProjectService;
 import com.both.testing_pilot_backend.utils.CursorPaginationUtil;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,27 +29,36 @@ public class ProjectController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<CursorPaginationResponse<Project>>> getAllProjects(@RequestParam MultiValueMap<String, String> params,
-                                                                      @RequestParam int page,
-                                                                      @RequestParam int size) {
-        PageRequest pageRequest = new PageRequest(page, size, 0l);
-        List<Project> projects =  projectService.getAllProjects(params, pageRequest);
+                                                                                         @RequestParam int page,
+                                                                                         @RequestParam int size) {
 
-        CursorPaginationResponse<Project> cursorResponse = CursorPaginationUtil.build(projects, pageRequest.getSize(),
+        PageRequest pageRequest = new PageRequest(page, size, 0l);
+        List<Project> projects = projectService.getAllProjects(params, pageRequest);
+
+        CursorPaginationResponse<Project> cursorResponse = CursorPaginationUtil.build(projects,
+                pageRequest.getSize(),
                 project -> project.getCreatedAt());
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .message("Projects has been fetched successfully")
-                .status(HttpStatus.OK)
-                .success(true)
-                .data(cursorResponse)
-                .build();
+        ApiResponse apiResponse = ApiResponse.builder().message("Projects has been fetched successfully").status(
+                HttpStatus.OK).success(true).data(cursorResponse).build();
 
         return ResponseEntity.ok(apiResponse);
-    };
+    }
+
+    ;
+
+    @GetMapping("/{project-id}")
+    public ResponseEntity<ApiResponse<Project>> getProjectById(@PathVariable("project-id") UUID projectId) {
+        Project project = projectService.findByProjectId(projectId);
+        ApiResponse apiResponse = ApiResponse.builder().message("Project has been fetched successfully").status(
+                HttpStatus.OK).success(true).data(project).build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
 
 
     @PostMapping
-    public ResponseEntity<?> createProject(@Valid @RequestBody CreateProjectRequest request) {
+    public ResponseEntity<?> createProject(@Valid @RequestBody ProjectRequest request) {
 
         return ResponseEntity.ok().body(projectService.saveProject(request));
     }
@@ -59,11 +68,19 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<?>> deleteProject(@PathVariable("project-id") UUID projectId) {
         projectService.deleteProject(projectId);
 
-        ApiResponse<Object> apiResponse = ApiResponse.builder()
-                .message("Project has been deleted")
-                .status(HttpStatus.NO_CONTENT)
-                .success(true)
-                .build();
+        ApiResponse<Object> apiResponse = ApiResponse.builder().message("Project has been deleted").status(HttpStatus.NO_CONTENT).success(
+                true).build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PreAuthorize("@projectSecurity.isProjectOwner(#projectId)")
+    @PutMapping("/{project-id}")
+    public ResponseEntity<ApiResponse<Project>> updateProjectById(@Valid @RequestBody ProjectRequest request,
+                                                                  @PathVariable("project-id") UUID projectId) {
+        Project project = projectService.updateProjectById(projectId, request);
+
+        ApiResponse apiResponse = ApiResponse.builder().message("Project has been updated successfully").status(
+                HttpStatus.OK).success(true).data(project).build();
         return ResponseEntity.ok(apiResponse);
     }
 }

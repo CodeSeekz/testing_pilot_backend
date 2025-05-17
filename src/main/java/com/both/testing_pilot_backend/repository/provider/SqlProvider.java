@@ -1,8 +1,8 @@
 package com.both.testing_pilot_backend.repository.provider;
 
-import com.both.testing_pilot_backend.model.request.PageRequest;
-import com.both.testing_pilot_backend.model.request.apiFeature.Filter;
-import com.both.testing_pilot_backend.model.request.apiFeature.Sort;
+import com.both.testing_pilot_backend.dto.request.PageRequest;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Filter;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Sort;
 import com.both.testing_pilot_backend.utils.CursorPaginationUtil;
 import com.both.testing_pilot_backend.utils.SqlFieldValidator;
 import lombok.RequiredArgsConstructor;

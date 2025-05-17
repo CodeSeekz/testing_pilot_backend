@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.request.apiFeature;
+package com.both.testing_pilot_backend.dto.request.apiFeature;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

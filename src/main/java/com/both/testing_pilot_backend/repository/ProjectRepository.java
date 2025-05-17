@@ -1,14 +1,13 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.Project;
-import com.both.testing_pilot_backend.model.request.PageRequest;
-import com.both.testing_pilot_backend.model.request.apiFeature.Filter;
-import com.both.testing_pilot_backend.model.request.apiFeature.Sort;
+import com.both.testing_pilot_backend.model.Project;
+import com.both.testing_pilot_backend.dto.request.PageRequest;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Filter;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Sort;
 import com.both.testing_pilot_backend.repository.provider.SqlProvider;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Mapper
@@ -32,7 +31,7 @@ public interface ProjectRepository {
     List<Project> getAllProjects(@Param("filters") List<Filter> filters,
                                  @Param("sorts") List<Sort> sorts,
                                  @Param("search") List<Filter> search,
-                                 @Param("pageRequest")PageRequest pageRequest,
+                                 @Param("pageRequest") PageRequest pageRequest,
                                  @Param("cursor") String cursor,
                                  @Param("tableName") String table);
 
@@ -40,7 +39,7 @@ public interface ProjectRepository {
                 SELECT EXISTS(
                     SELECT 1
                     FROM projects
-                    WHERE project_id = #{projectId}
+                    WHERE id = #{projectId}
                     AND project_owner_id = #{userId}
                 )
             """)
@@ -48,13 +47,24 @@ public interface ProjectRepository {
 
     @Delete("""
                     DELETE FROM projects
-                    WHERE project_id = #{projectId}
+                    WHERE id = #{projectId}
             """)
     void deleteByProjectId(UUID projectId);
 
+    @ResultMap("projectMapper")
     @Select("""
-        SELECT * FROM projects
-        WHERE project_id = #{projectId};
-    """)
-    Project findByProjectId(UUID projectId);
+                SELECT * FROM projects
+                WHERE id = #{projectId};
+            """)
+    Project findByProjectId(@Param("projectId") UUID projectId);
+
+    @ResultMap("projectMapper")
+    @Select("""
+                UPDATE projects SET
+                                    name = #{request.projectName},
+                                    description = #{request.projectDescription}
+                WHERE id = #{request.projectId}
+                RETURNING *;
+            """)
+    Project updateProjectById(@Param("request") Project request);
 }

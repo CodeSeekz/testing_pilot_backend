@@ -1,7 +1,6 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.User;
-import com.both.testing_pilot_backend.model.request.RegisterRequestDTO;
+import com.both.testing_pilot_backend.model.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.UUID;

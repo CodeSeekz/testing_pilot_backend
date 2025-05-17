@@ -1,10 +1,9 @@
 package com.both.testing_pilot_backend.utils;
 
-import com.both.testing_pilot_backend.model.request.apiFeature.Filter;
-import com.both.testing_pilot_backend.model.request.apiFeature.Sort;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Filter;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,63 +12,58 @@ import java.util.stream.Collectors;
 public class SpecParser {
 
     public List<Filter> parseFilters(MultiValueMap<String, String> params) {
-            List<Filter> filters = new ArrayList<>();
+        List<Filter> filters = new ArrayList<>();
 
-            params.forEach((key, value) -> {
-                if(isNotFilter(key)) return;
+        params.forEach((key, value) -> {
+            if (isNotFilter(key)) return;
 
-                String[] keyPart = key.split("_");
+            String[] keyPart = key.split("_");
 
-                if(keyPart.length != 2) return;
+            if (keyPart.length != 2) return;
 
-                try {
-                    String filedName = keyPart[0];
-                    Filter.Operator operator = Filter.Operator.valueOf(keyPart[1].toUpperCase());
-                    String filedValue = String.join(",", value);
+            try {
+                String filedName = keyPart[0];
+                Filter.Operator operator = Filter.Operator.valueOf(keyPart[1].toUpperCase());
+                String filedValue = String.join(",", value);
 
-                    Filter filter = Filter.builder()
-                            .field(filedName)
-                            .operator(operator)
-                            .value(filedValue)
-                            .build();
-                    filters.add(filter);
-                } catch (IllegalArgumentException e) {
-                }
+                Filter filter = Filter.builder().field(filedName).operator(operator).value(filedValue).build();
+                filters.add(filter);
+            } catch (IllegalArgumentException e) {
+            }
 
-            });
+        });
 
         System.out.println(filters.toString());
         return filters;
     }
 
     public List<Sort> parseSort(String sortParams) {
-        if(sortParams == null || sortParams.isEmpty()) {
+        if (sortParams == null || sortParams.isEmpty()) {
             return null;
         }
 
-        return Arrays.stream(sortParams.split(","))
-                .map(s -> {
-                    Sort sort = new Sort();
-                    if(s.startsWith("-")) {
-                        sort.setField(s.substring(1));
-                        sort.setDirection(Sort.Direction.DESC);
-                    } else {
-                        sort.setField(s);
-                    }
-                    return sort;
-                }).collect(Collectors.toList());
+        return Arrays.stream(sortParams.split(",")).map(s -> {
+            Sort sort = new Sort();
+            if (s.startsWith("-")) {
+                sort.setField(s.substring(1));
+                sort.setDirection(Sort.Direction.DESC);
+            } else {
+                sort.setField(s);
+            }
+            return sort;
+        }).collect(Collectors.toList());
     }
 
     public List<Filter> parseSearch(MultiValueMap<String, String> params) {
-        if(params == null || params.isEmpty()) {
+        if (params == null || params.isEmpty()) {
             return null;
         }
 
         List<Filter> searchFields = new ArrayList<>();
 
-        for(Map.Entry<String, List<String>> entry: params.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : params.entrySet()) {
             String key = entry.getKey();
-            if(key.startsWith("search_")) {
+            if (key.startsWith("search_")) {
                 String field = key.substring("search_".length());
                 String value = entry.getValue().get(0);
 

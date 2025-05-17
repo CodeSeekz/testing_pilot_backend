@@ -1,7 +1,7 @@
 package com.both.testing_pilot_backend.utils;
 
-import com.both.testing_pilot_backend.model.response.CursorPaginationMeta;
-import com.both.testing_pilot_backend.model.response.CursorPaginationResponse;
+import com.both.testing_pilot_backend.dto.response.CursorPaginationMeta;
+import com.both.testing_pilot_backend.dto.response.CursorPaginationResponse;
 import lombok.Data;
 
 import java.time.LocalDateTime;

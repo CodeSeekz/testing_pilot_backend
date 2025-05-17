@@ -1,8 +1,8 @@
 package com.both.testing_pilot_backend.utils;
 
 import com.both.testing_pilot_backend.exceptions.BadRequestException;
-import com.both.testing_pilot_backend.model.request.apiFeature.Filter;
-import com.both.testing_pilot_backend.model.request.apiFeature.Sort;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Filter;
+import com.both.testing_pilot_backend.dto.request.apiFeature.Sort;
 
 import java.util.List;
 import java.util.Map;

@@ -1,6 +1,6 @@
 package com.both.testing_pilot_backend.event;
 
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.User;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 

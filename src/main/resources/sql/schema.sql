@@ -71,6 +71,9 @@ CREATE TABLE IF NOT EXISTS collections
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at      TIMESTAMPTZ  NULL,
     CONSTRAINT fk_collections_projects FOREIGN KEY (project_id) REFERENCES projects (project_id) ON DELETE CASCADE ON UPDATE CASCADE
-)
+);
 
+
+SELECT * FROM projects
+WHERE id = '4bddbf1d-a90f-437e-ad52-a5cda5ae14f0';
 

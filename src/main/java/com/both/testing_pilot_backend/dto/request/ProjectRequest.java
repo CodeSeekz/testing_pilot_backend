@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.request;
+package com.both.testing_pilot_backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateProjectRequest {
+public class ProjectRequest {
 
     @NotNull
     @NotBlank

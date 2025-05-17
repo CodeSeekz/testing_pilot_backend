@@ -1,4 +1,4 @@
-package com.both.testing_pilot_backend.model.entity;
+package com.both.testing_pilot_backend.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package com.both.testing_pilot_backend.service.impl;
 
 
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.User;
 import com.both.testing_pilot_backend.repository.UserRepository;
 import com.both.testing_pilot_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
