@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
-    user_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username      VARCHAR(50)                    NOT NULL,
+    id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name      VARCHAR(50)                    NOT NULL,
     email         VARCHAR(50) UNIQUE             NOT NULL,
     password      VARCHAR(255),
     is_verify     BOOLEAN          DEFAULT FALSE NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE users
 DROP TABLE IF EXISTS user_accounts;
 CREATE TABLE IF NOT EXISTS user_accounts
 (
-    user_accounts_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id          UUID         NOT NULL,
     provider         VARCHAR(255) NOT NULL UNIQUE,
     provider_id      VARCHAR(255) NOT NULL UNIQUE,
@@ -57,23 +57,20 @@ CREATE TABLE IF NOT EXISTS project_collaborators (
     project_collaborator_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL,
     user_id UUID NOT NULL,
-    CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE  ON UPDATE CASCADE,
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE  ON UPDATE CASCADE,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS collections;
 CREATE TABLE IF NOT EXISTS collections
 (
-    collection_id   UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
-    collection_name VARCHAR(255) NOT NULL DEFAULT 'new collection',
+    id   UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL DEFAULT 'new collection',
     project_id      UUID         NOT NULL,
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at      TIMESTAMPTZ  NULL,
-    CONSTRAINT fk_collections_projects FOREIGN KEY (project_id) REFERENCES projects (project_id) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_collections_projects FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
-SELECT * FROM projects
-WHERE id = '4bddbf1d-a90f-437e-ad52-a5cda5ae14f0';
 

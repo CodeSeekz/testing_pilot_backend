@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class  ApiResponse <T> {
+public class CustomApiResponse<T> {
     private String message;
     private HttpStatus status;
     private Boolean success;
