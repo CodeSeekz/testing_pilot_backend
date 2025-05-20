@@ -1,6 +1,7 @@
-package com.both.testing_pilot_backend.model.entity;
+package com.both.testing_pilot_backend.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,25 +11,24 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class User implements UserDetails {
 
-	private Long userId;
-	private String username;
+	private UUID userId;
+	private String name;
 	private String email;
 	private String password;
-	private List<String> roles;
+	private Boolean isVerified = false;
+	private String profileImage;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-		for (String role : roles) {
-			simpleGrantedAuthorities.add(new SimpleGrantedAuthority(role));
-		}
-		return simpleGrantedAuthorities;
+		return null;
 	}
 
 	@Override
@@ -39,25 +39,5 @@ public class User implements UserDetails {
 	@Override
 	public String getUsername() {
 		return email;
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		return true;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return true;
 	}
 }

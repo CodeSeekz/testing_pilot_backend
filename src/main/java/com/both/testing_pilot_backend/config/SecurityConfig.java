@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,69 +24,73 @@ import static org.springframework.security.config.Customizer.withDefaults;
  */
 @Configuration
 @AllArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
-	// Custom filter that checks JWT token validity
-	private final JwtAuthFilter jwtAuthFilter;
+    // Custom filter that checks JWT token validity
+    private final JwtAuthFilter jwtAuthFilter;
 
-	// Handles unauthorized access attempts
-	private final JwtAuthEntryPoint jwtAuthEntrypoint;
+    // Handles unauthorized access attempts
+    private final JwtAuthEntryPoint jwtAuthEntrypoint;
 
-	// Allow the to access without authentication
-	private final String[] WHITE_LIST_URL = new String[]{
-					"/api/v1/auths/**",         // Authentication APIs (login, register, etc.)
-					"/v3/api-docs/**",         // OpenAPI docs
-					"/swagger-ui/**",          // Swagger UI
-					"/swagger-ui.html"
-	};
+    // Allow the to access without authentication
+    private final String[] WHITE_LIST_URL = new String[]{
+            "/api/v1/auths/**",         // Authentication APIs (login, register, etc.)
+            "/v3/api-docs/**",         // OpenAPI docs
+            "/swagger-ui/**",          // Swagger UI
+            "/swagger-ui.html",
+            "/actuator/**",
+            "/no-auth/**"
 
-	/**
-	 * Provides the authentication manager used to perform login authentication.
-	 *
-	 * @param configuration Spring's authentication configuration
-	 * @return AuthenticationManager bean
-	 * @throws Exception if failed to get the manager
-	 */
-	@Bean
-	AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-		return configuration.getAuthenticationManager();
-	}
+    };
 
-	/**
-	 * Configures the security filter chain for handling HTTP security.
-	 * It defines:
-	 * - Public and protected endpoints
-	 * - Stateless session policy
-	 * - JWT filter integration
-	 * - Custom error handling
-	 *
-	 * @param http HttpSecurity object for configuration
-	 * @return Configured SecurityFilterChain
-	 * @throws Exception if an error occurs during setup
-	 */
-	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-						// Enable CORS and disable CSRF (appropriate for APIs)
-						.cors(withDefaults()).csrf(AbstractHttpConfigurer::disable)
+    /**
+     * Provides the authentication manager used to perform login authentication.
+     *
+     * @param configuration Spring's authentication configuration
+     * @return AuthenticationManager bean
+     * @throws Exception if failed to get the manager
+     */
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
-						// Define public and protected endpoints
-						.authorizeHttpRequests(request -> request
-										.requestMatchers(
-														WHITE_LIST_URL
-										).permitAll()                     // These are accessible without authentication
-										.anyRequest().authenticated()     // All other endpoints require JWT
-						)
+    /**
+     * Configures the security filter chain for handling HTTP security.
+     * It defines:
+     * - Public and protected endpoints
+     * - Stateless session policy
+     * - JWT filter integration
+     * - Custom error handling
+     *
+     * @param http HttpSecurity object for configuration
+     * @return Configured SecurityFilterChain
+     * @throws Exception if an error occurs during setup
+     */
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // Enable CORS and disable CSRF (appropriate for APIs)
+                .cors(withDefaults()).csrf(AbstractHttpConfigurer::disable)
 
-						// Use stateless sessions (no session data stored on server)
-						.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Define public and protected endpoints
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers(
+                                WHITE_LIST_URL
+                        ).permitAll()                     // These are accessible without authentication
+                        .anyRequest().authenticated()     // All other endpoints require JWT
+                )
 
-						// Use custom handler for authentication errors
-						.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntrypoint))
+                // Use stateless sessions (no session data stored on server)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-						// Add JWT filter before Spring's built-in authentication filter
-						.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // Use custom handler for authentication errors
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntrypoint))
 
-		return http.build();
-	}
+                // Add JWT filter before Spring's built-in authentication filter
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

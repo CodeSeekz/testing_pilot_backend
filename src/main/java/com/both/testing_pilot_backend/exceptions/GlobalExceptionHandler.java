@@ -12,12 +12,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	@ExceptionHandler(AccessDeniedException.class)
+	public ProblemDetail handleAccessDeniedException(AccessDeniedException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, e.getMessage());
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
 	@ExceptionHandler(BadRequestException.class)
 	public ProblemDetail handleBadRequestException(BadRequestException e) {
 		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -31,6 +39,21 @@ public class GlobalExceptionHandler {
 		problemDetail.setProperty("timestamp", LocalDateTime.now());
 		return problemDetail;
 	}
+
+	@ExceptionHandler(GithubOauthException.class)
+	public ProblemDetail handleGithubOauthException(GithubOauthException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
+	@ExceptionHandler(GithubApiException.class)
+	public ProblemDetail handleGithubApiException(GithubApiException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
+
 
 	// Handle validation errors
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -125,4 +148,11 @@ public class GlobalExceptionHandler {
 						.body(problemDetail);
 	}
 
+	@ExceptionHandler(EmailAlreadyExistException.class)
+	public ProblemDetail handleEmailAlreadyExistException(EmailAlreadyExistException e) {
+		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+
+		problemDetail.setProperty("timestamp", LocalDateTime.now());
+		return problemDetail;
+	}
 }

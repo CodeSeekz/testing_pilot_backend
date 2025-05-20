@@ -1,26 +1,48 @@
 package com.both.testing_pilot_backend.repository;
 
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.User;
 import org.apache.ibatis.annotations.*;
 
-import java.util.List;
+import java.util.UUID;
 
 @Mapper
 public interface UserRepository {
 
-	@Results(id = "appUserMapper", value = {
-					@Result(property = "userId", column = "user_id"),
-					@Result(property = "username", column = "username"),
-					@Result(property = "roles", column = "user_id", many = @Many(select = "getAllRolesByUserId"))
-	})
-	@Select("""
-					SELECT * FROM users WHERE email = #{email}
-					""")
-	User getUserByEmail(String email);
+    @Results(id = "appUserMapper", value = {@Result(property = "userId", column = "user_id"),
+            @Result(property = "name", column = "username"),
+            @Result(property = "isVerified", column = "is_verified"),
+            @Result(property = "profileImage", column = "profile_image")})
+    @Select("""
+            SELECT * FROM users WHERE email = #{email}
+            """)
+    User getUserByEmail(String email);
 
-	@Select("""
-					SELECT name FROM user_role ur INNER JOIN roles ar ON ur.role_id = ar.role_id WHERE user_id = #{userId}
-					""")
-	List<String> getAllRolesByUserId(Long userId);
+    @ResultMap("appUserMapper")
+    @Select("""
+                SELECT * FROM  users where user_id = #{userId}
+            """)
+    User findById(UUID userId);
 
+    @ResultMap("appUserMapper")
+    @Select("""
+                    INSERT INTO users (username, email, password, profile_image, is_verified
+                )
+                values (#{request.name}, #{request.email}, #{request.password}, #{request.profileImage}, #{request.isVerified})
+                RETURNING *;
+            """)
+    User saveUser(@Param("request") User request);
+
+    @Update("""
+                UPDATE users SET
+                is_verify = #{isVerified}
+                WHERE user_id = #{userId};
+            """)
+    void updateIsVerified(UUID userId, boolean isVerified);
+
+    @Update("""
+            UPDATE users SET
+            password = #{newPassword}
+            WHERE user_id = #{userId}
+            """)
+    void updatePassword(UUID userId, String newPassword);
 }

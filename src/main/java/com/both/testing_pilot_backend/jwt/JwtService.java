@@ -1,6 +1,6 @@
 package com.both.testing_pilot_backend.jwt;
 
-import com.both.testing_pilot_backend.model.entity.User;
+import com.both.testing_pilot_backend.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 @Component
 public class JwtService {
 
-	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60; //5 hour
+	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
 	public static final String SECRET = "FVPr6Q/fVlHGZkElZubC0Zaxv657dPUfDQ4o9DADjSin7+uST1d2A5klMWrMK8fmSl3doyf2wn5zj56VC+qqCg==";
 
 	private String createToken(Map<String, Object> claim, String subject) {
